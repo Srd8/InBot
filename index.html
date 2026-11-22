@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Epic Gift — Telegram Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+  <style>
+    :root {
+      --bg-main: #131217;
+      --bg-card: #1b1a22;
+      --bg-elevated: #23212c;
+      --bg-pill: #25232f;
+      --border-subtle: rgba(255, 255, 255, 0.07);
+      --text-primary: #ffffff;
+      --text-secondary: #9a97a8;
+      --accent-blue: #2f80ed;
+      --accent-blue-bright: #3b8bff;
+      --accent-green: #22c55e;
+      --accent-gold: #fbbf24;
+      --accent-pink: #f472b6;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 440px;
+      min-height: 100vh;
+      background: var(--bg-main);
+      padding: 12px 14px 88px;
+      position: relative;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .brand-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--bg-pill);
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      padding: 6px 11px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .admin-chip {
+      background: rgba(251, 191, 36, 0.16);
+      color: var(--accent-gold);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      border-radius: 999px;
+      padding: 2px 7px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      background: var(--bg-pill);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      border-radius: 12px;
+      height: 34px;
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+
+    .wallet-btn {
+      background: var(--accent-blue);
+      border: none;
+      color: #fff;
+      border-radius: 12px;
+      height: 34px;
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .wallet-btn.connected {
+      background: rgba(34, 197, 94, 0.18);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.35);
+    }
+
+    .balance-card {
+      background: linear-gradient(145deg, #1d1c26, #17161e);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .balance-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .balance-main {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .balance-amount {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+    }
+
+    .balance-sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .balance-btns {
+      display: flex;
+      gap: 7px;
+    }
+
+    .btn-primary {
+      background: var(--accent-blue);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 9px 13px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-secondary {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 9px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .live-strip {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      min-height: 40px;
+    }
+
+    .live-badge {
+      background: rgba(34, 197, 94, 0.16);
+      color: #4ade80;
+      border-radius: 8px;
+      padding: 3px 7px;
+      font-size: 10px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .live-empty {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .live-chip {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 4px 8px;
+      font-size: 11px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .promo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .promo-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 12px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .promo-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 7px;
+      border-radius: 8px;
+      background: rgba(59, 139, 255, 0.16);
+      color: #7cc0ff;
+      margin-bottom: 6px;
+    }
+
+    .promo-art {
+      height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @keyframes floatSoft {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .float-anim {
+      animation: floatSoft 3s ease-in-out infinite;
+    }
+
+    .promo-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .promo-sub {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .rocket-hero {
+      background: linear-gradient(160deg, #1d1b2b, #15141c);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 14px;
+      margin-bottom: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .rocket-stage {
+      height: 124px;
+      border-radius: 14px;
+      background: radial-gradient(circle at 50% 70%, rgba(59, 139, 255, 0.18), rgba(19, 18, 23, 0.9));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    .rocket-emoji {
+      font-size: 38px;
+      transition: transform 0.12s ease;
+      display: inline-block;
+    }
+
+    .rocket-emoji.flying {
+      animation: rocketShake 0.2s infinite alternate;
+    }
+
+    @keyframes rocketShake {
+      from { transform: translate(-2px, -3px) rotate(-8deg) scale(1.06); }
+      to { transform: translate(2px, -6px) rotate(6deg) scale(1.1); }
+    }
+
+    .mult-readout {
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--accent-gold);
+      margin-top: 4px;
+    }
+
+    .rocket-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .input-dark {
+      width: 100%;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      border-radius: 11px;
+      padding: 9px 11px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .section-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 13px;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .mini-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .mini-tab {
+      flex: 1;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      border-radius: 10px;
+      padding: 7px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .mini-tab.active {
+      background: var(--accent-blue);
+      color: #fff;
+      border-color: var(--accent-blue);
+    }
+
+    .mines-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin: 10px 0;
+    }
+
+    .mine-cell {
+      aspect-ratio: 1 / 1;
+      border-radius: 10px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mine-cell.safe {
+      background: rgba(34, 197, 94, 0.22);
+      border-color: rgba(34, 197, 94, 0.5);
+    }
+
+    .mine-cell.boom {
+      background: rgba(239, 68, 68, 0.28);
+      border-color: rgba(239, 68, 68, 0.6);
+    }
+
+    .gift-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+    }
+
+    .gift-item {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .price-strike {
+      text-decoration: line-through;
+      color: var(--text-secondary);
+      font-size: 11px;
+      margin-right: 5px;
+    }
+
+    .price-final {
+      color: var(--accent-gold);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .history-item {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 9px 11px;
+      margin-bottom: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 440px;
+      background: rgba(22, 21, 29, 0.96);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border-subtle);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      padding: 7px 6px 10px;
+      z-index: 30;
+    }
+
+    .nav-item {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+    }
+
+    .nav-item.active {
+      color: var(--accent-blue-bright);
+    }
+
+    .nav-icon {
+      font-size: 17px;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 400px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 16px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .toast-msg {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #23212c;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 12px;
+      padding: 9px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      z-index: 80;
+      display: none;
+      max-width: 90%;
+      text-align: center;
+    }
+
+    .toast-msg.show {
+      display: block;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="toast" class="toast-msg"></div>
+
+  <div class="app-shell">
+    <!-- Top Header -->
+    <div class="top-bar">
+      <div class="brand-pill">
+        <span>🎁 Epic Gift</span>
+        <span id="adminBadge" class="admin-chip hidden">ADMIN 95%</span><span id="dbBadge" class="admin-chip" style="background:rgba(34,197,94,0.14);color:#4ade80;border-color:rgba(34,197,94,0.3);">DB</span>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" onclick="openGiftsStore()">⭐ Gifts</button>
+        <button id="walletBtn" class="wallet-btn" onclick="handleWalletAction()">🔗 Wallet</button>
+      </div>
+    </div>
+
+    <!-- Balance Card -->
+    <div class="balance-card">
+      <div class="balance-row">
+        <div class="balance-main">
+          <span style="font-size:28px;">💎</span>
+          <div>
+            <div id="tonDisplay" class="balance-amount">0.000 TON</div>
+            <div id="gramDisplay" class="balance-sub">0 GRAM • User #<span id="userIdLabel">guest</span></div>
+          </div>
+        </div>
+        <div class="balance-btns">
+          <button class="btn-primary" onclick="openModal('depositModal')">Deposit</button>
+          <button class="btn-secondary" onclick="openModal('withdrawModal')">Withdraw</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Activity Strip (populated strictly from real actions) -->
+    <div id="liveStrip" class="live-strip">
+      <span class="live-badge">LIVE</span>
+      <span id="liveEmptyText" class="live-empty">No live events yet. Play, refer (+0.30 TON), or buy a gift.</span>
+    </div>
+
+    <!-- TAB 1: HOME -->
+    <div id="tab-home">
+      <div class="promo-grid">
+        <!-- FREE24 Gold Rings -->
+        <div class="promo-card" onclick="claimPromo('free24')">
+          <span class="promo-tag">FREE24</span>
+          <div class="promo-art float-anim">
+            <svg width="78" height="64" viewBox="0 0 90 74" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="goldRingGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#fff3b0"/>
+                  <stop offset="45%" stop-color="#f59e0b"/>
+                  <stop offset="100%" stop-color="#92400e"/>
+                </linearGradient>
+                <linearGradient id="platRingGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#ffffff"/>
+                  <stop offset="50%" stop-color="#cbd5e1"/>
+                  <stop offset="100%" stop-color="#475569"/>
+                </linearGradient>
+              </defs>
+              <ellipse cx="34" cy="40" rx="18" ry="18" stroke="url(#goldRingGrad)" stroke-width="6"/>
+              <polygon points="34,14 40,21 34,27 28,21" fill="#7dd3fc"/>
+              <ellipse cx="56" cy="42" rx="17" ry="17" stroke="url(#platRingGrad)" stroke-width="5.5"/>
+              <polygon points="56,18 61,24 56,29 51,24" fill="#f0abfc"/>
+            </svg>
+          </div>
+          <div class="promo-title">Daily Drop (+0.05 TON)</div>
+          <div id="free24Timer" class="promo-sub">Available now</div>
+        </div>
+
+        <!-- FREE Gift Box -->
+        <div class="promo-card" onclick="claimPromo('free')">
+          <span class="promo-tag" style="background:rgba(244,114,182,0.18);color:#f9a8d4;">FREE</span>
+          <div class="promo-art float-anim">
+            <svg width="78" height="64" viewBox="0 0 90 74" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="giftBoxGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#f472b6"/>
+                  <stop offset="100%" stop-color="#be185d"/>
+                </linearGradient>
+                <linearGradient id="ribbonGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#fde68a"/>
+                  <stop offset="100%" stop-color="#f59e0b"/>
+                </linearGradient>
+              </defs>
+              <rect x="24" y="30" width="42" height="32" rx="7" fill="url(#giftBoxGrad)"/>
+              <rect x="21" y="23" width="48" height="10" rx="5" fill="#ec4899"/>
+              <rect x="41" y="23" width="8" height="39" fill="url(#ribbonGrad)"/>
+              <path d="M45 23 C36 12, 26 16, 33 23 Z" fill="url(#ribbonGrad)"/>
+              <path d="M45 23 C54 12, 64 16, 57 23 Z" fill="url(#ribbonGrad)"/>
+            </svg>
+          </div>
+          <div class="promo-title">Gift Claim (+25 GRAM)</div>
+          <div id="freeTimer" class="promo-sub">Tap to claim</div>
+        </div>
+      </div>
+
+      <!-- Rocket Game -->
+      <div class="rocket-hero">
+        <div class="section-title">
+          <span>🚀 ROCKET</span>
+          <span id="rocketStatus" style="font-size:11px;color:var(--text-secondary);">Ready</span>
+        </div>
+        <div class="rocket-stage">
+          <div id="rocketEmoji" class="rocket-emoji">🚀</div>
+          <div id="rocketMult" class="mult-readout">1.00x</div>
+        </div>
+        <div class="rocket-controls" style="margin-bottom:8px;">
+          <input id="rocketBet" class="input-dark" type="number" step="0.01" min="0.01" placeholder="Bet TON (e.g. 0.10)" />
+          <input id="rocketAuto" class="input-dark" type="number" step="0.1" min="1.1" placeholder="Auto Cashout (optional)" />
+        </div>
+        <div class="rocket-controls">
+          <button id="rocketLaunchBtn" class="btn-primary" onclick="launchRocket()">Launch</button>
+          <button id="rocketCashBtn" class="btn-secondary" onclick="cashoutRocket()" disabled>Cash Out</button>
+        </div>
+      </div>
+
+      <!-- PVP Hub -->
+      <div class="section-card">
+        <div class="section-title">
+          <span>⚔️ PVP HUB</span>
+          <span style="font-size:11px;color:var(--text-secondary);">Real Stake Match</span>
+        </div>
+        <div class="mini-tabs">
+          <button id="pvpSoloTab" class="mini-tab active" onclick="setPvpMode('SOLO')">SOLO</button>
+          <button id="pvpTeamTab" class="mini-tab" onclick="setPvpMode('TEAM')">TEAM</button>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <input id="pvpStake" class="input-dark" type="number" step="0.05" min="0.05" placeholder="Stake TON (e.g. 0.20)" />
+          <button class="btn-primary" onclick="playPvpMatch()">Play Match</button>
+        </div>
+      </div>
+
+      <!-- Play Hub: Upgrade / Plinko / Mines -->
+      <div class="section-card">
+        <div class="section-title">
+          <span>🎮 PLAY HUB</span>
+        </div>
+        <div class="mini-tabs">
+          <button id="subUpgrade" class="mini-tab active" onclick="switchPlayGame('upgrade')">Upgrade</button>
+          <button id="subPlinko" class="mini-tab" onclick="switchPlayGame('plinko')">Plinko</button>
+          <button id="subMines" class="mini-tab" onclick="switchPlayGame('mines')">Mines</button>
+        </div>
+
+        <div id="game-upgrade">
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">
+            60% win chance to upgrade stake by 1.65x.
+          </div>
+          <div style="display:flex;gap:8px;">
+            <input id="upgradeBet" class="input-dark" type="number" step="0.05" min="0.05" placeholder="Amount TON" />
+            <button class="btn-primary" onclick="runUpgrade()">Upgrade</button>
+          </div>
+        </div>
+
+        <div id="game-plinko" class="hidden">
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">
+            Drop ball with multiplier outcome (0.5x – 2.5x).
+          </div>
+          <div style="display:flex;gap:8px;">
+            <input id="plinkoBet" class="input-dark" type="number" step="0.05" min="0.05" placeholder="Amount TON" />
+            <button class="btn-primary" onclick="runPlinko()">Drop Ball</button>
+          </div>
+        </div>
+
+        <div id="game-mines" class="hidden">
+          <div style="display:flex;gap:8px;margin-bottom:8px;">
+            <input id="minesBet" class="input-dark" type="number" step="0.05" min="0.05" placeholder="Bet TON" />
+            <button class="btn-primary" onclick="startMinesRound()">Start</button>
+            <button class="btn-secondary" onclick="collectMinesRound()">Collect</button>
+          </div>
+          <div id="minesGrid" class="mines-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: BACKPACK -->
+    <div id="tab-backpack" class="hidden">
+      <div class="section-card">
+        <div class="section-title">
+          <span>🎒 Backpack & Inventory</span>
+          <button class="icon-btn" onclick="openGiftsStore()">+ Buy Gift</button>
+        </div>
+        <div id="backpackList"></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: INVITE (+0.30 TON per referral) -->
+    <div id="tab-invite" class="hidden">
+      <div class="section-card">
+        <div class="section-title">
+          <span>🤝 Referral Program (+0.30 TON)</span>
+          <span id="refCountBadge" class="admin-chip">0 Refs</span>
+        </div>
+        <p style="font-size:12px;color:var(--text-secondary);margin-top:0;">
+          Earn <b>0.30 TON</b> for every valid referral link used.
+        </p>
+        <input id="myRefLink" class="input-dark" readonly style="margin-bottom:8px;" />
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <button class="btn-primary" style="flex:1;" onclick="copyRefLink()">Copy Link</button>
+          <button class="btn-secondary" style="flex:1;" onclick="shareRefLink()">Share</button>
+        </div>
+
+        <div style="border-top:1px solid var(--border-subtle);padding-top:10px;">
+          <div style="font-size:12px;font-weight:700;margin-bottom:6px;">Apply Referral Code / Inviter ID</div>
+          <div style="display:flex;gap:8px;">
+            <input id="claimRefInput" class="input-dark" placeholder="Enter inviter ID or ref_..." />
+            <button class="btn-primary" onclick="claimReferralReward()">Claim +0.30</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: LEADERBOARD -->
+    <div id="tab-leaderboard" class="hidden">
+      <div class="section-card">
+        <div class="section-title">
+          <span>🏆 Leaderboard</span>
+        </div>
+        <div id="leaderboardList"></div>
+      </div>
+    </div>
+
+    <!-- TAB 5: EARN & ADMIN -->
+    <div id="tab-earn" class="hidden">
+      <div class="section-card">
+        <div class="section-title">
+          <span>⚡ Telegram Stars & Gifts</span>
+          <button class="btn-primary" onclick="openGiftsStore()">Open Store</button>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);">
+          Buy real Telegram gifts with Telegram Stars. Admin ID <code>5220076610</code> receives a 95% discount (pays 5% of official Stars price).
+        </div>
+      </div>
+
+      <div id="adminPanelCard" class="section-card hidden">
+        <div class="section-title">
+          <span>🛡️ Admin Panel (ID: 5220076610)</span>
+          <span class="admin-chip">95% OFF ACTIVE</span>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <input id="adminTargetId" class="input-dark" placeholder="Target User ID (default: self)" />
+          <input id="adminAddTon" class="input-dark" type="number" step="0.1" placeholder="+/- TON" />
+        </div>
+        <button class="btn-primary" style="width:100%;" onclick="adminAdjustBalance()">Apply Balance Update</button>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title">
+          <span>📜 Transaction History</span>
+        </div>
+        <div id="historyList"></div>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-tab="home" onclick="switchMainTab('home', this)">
+        <span class="nav-icon">🏠</span>
+        <span>Home</span>
+      </button>
+      <button class="nav-item" data-tab="backpack" onclick="switchMainTab('backpack', this)">
+        <span class="nav-icon">🎒</span>
+        <span>Backpack</span>
+      </button>
+      <button class="nav-item" data-tab="invite" onclick="switchMainTab('invite', this)">
+        <span class="nav-icon">🤝</span>
+        <span>Invite</span>
+      </button>
+      <button class="nav-item" data-tab="leaderboard" onclick="switchMainTab('leaderboard', this)">
+        <span class="nav-icon">🏆</span>
+        <span>Top</span>
+      </button>
+      <button class="nav-item" data-tab="earn" onclick="switchMainTab('earn', this)">
+        <span class="nav-icon">⚡</span>
+        <span>Earn</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Deposit Modal -->
+  <div id="depositModal" class="modal-backdrop" onclick="closeOnBackdrop(event, 'depositModal')">
+    <div class="modal-card">
+      <div class="section-title">
+        <span>💎 Deposit TON</span>
+        <button class="icon-btn" onclick="closeModal('depositModal')">✕</button>
+      </div>
+      <input id="depositAmount" class="input-dark" type="number" step="0.01" min="0.01" placeholder="Amount in TON (e.g. 1.00)" style="margin-bottom:10px;" />
+      <button class="btn-primary" style="width:100%;" onclick="submitDeposit()">Confirm Deposit</button>
+    </div>
+  </div>
+
+  <!-- Withdraw Modal -->
+  <div id="withdrawModal" class="modal-backdrop" onclick="closeOnBackdrop(event, 'withdrawModal')">
+    <div class="modal-card">
+      <div class="section-title">
+        <span>📤 Withdraw TON</span>
+        <button class="icon-btn" onclick="closeModal('withdrawModal')">✕</button>
+      </div>
+      <input id="withdrawAmount" class="input-dark" type="number" step="0.01" min="0.01" placeholder="Amount in TON" style="margin-bottom:10px;" />
+      <button class="btn-primary" style="width:100%;" onclick="submitWithdraw()">Confirm Withdrawal</button>
+    </div>
+  </div>
+
+  <!-- Telegram Gifts & Stars Store Modal -->
+  <div id="giftsStoreModal" class="modal-backdrop" onclick="closeOnBackdrop(event, 'giftsStoreModal')">
+    <div class="modal-card">
+      <div class="section-title">
+        <span>⭐ Telegram Stars Gifts</span>
+        <button class="icon-btn" onclick="closeModal('giftsStoreModal')">✕</button>
+      </div>
+      <div id="storeDiscountBanner" style="font-size:11px;color:var(--text-secondary);margin-bottom:10px;"></div>
+      <input id="giftRecipientInput" class="input-dark" placeholder="Recipient Telegram ID (default: your ID)" style="margin-bottom:10px;" />
+      <div id="giftsCatalogList" class="gift-grid"></div>
+    </div>
+  </div>
+
+  <script>
+    const APP_CONFIG = {
+      BOT_TOKEN: '5078034194:AAGCfu2i-eWZvjcQ-1P2pjlPCuaryTo8nro',
+      ADMIN_ID: '5220076610',
+      REFERRAL_REWARD_TON: 0.30,
+      ADMIN_DISCOUNT_PERCENT: 95
+    };
+
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
+
+    const tgUser = tg?.initDataUnsafe?.user;
+    const initDataRaw = tg?.initData || '';
+
+    function getOrCreateLocalUserId() {
+      if (tgUser?.id) return String(tgUser.id);
+      let saved = localStorage.getItem('epic_gift_local_uid');
+      if (!saved) {
+        saved = String(Math.floor(100000000 + Math.random() * 899999999));
+        localStorage.setItem('epic_gift_local_uid', saved);
+      }
+      return saved;
+    }
+
+    const state = {
+      userId: getOrCreateLocalUserId(),
+      username: tgUser?.username || '',
+      tonBalance: 0,
+      gramBalance: 0,
+      referralsCount: 0,
+      inventory: [],
+      history: [],
+      liveFeed: [],
+      leaderboard: [],
+      lastFree24Claim: 0,
+      lastFreeClaim: 0,
+      pvpMode: 'SOLO',
+      rocketTimer: null,
+      rocketActive: false,
+      rocketBetAmount: 0,
+      rocketCurrentMult: 1.0,
+      rocketCrashAt: 1.0,
+      minesActive: false,
+      minesBetAmount: 0,
+      minesBombs: new Set(),
+      minesOpened: new Set()
+    };
+
+    function isAdmin() {
+      return String(state.userId) === String(APP_CONFIG.ADMIN_ID);
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add('open');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+
+    function closeOnBackdrop(e, id) {
+      if (e.target.id === id) closeModal(id);
+    }
+
+    function persistLocal() {
+      localStorage.setItem(`epic_gift_state_${state.userId}`, JSON.stringify({
+        tonBalance: state.tonBalance,
+        gramBalance: state.gramBalance,
+        referralsCount: state.referralsCount,
+        inventory: state.inventory,
+        history: state.history,
+        liveFeed: state.liveFeed,
+        lastFree24Claim: state.lastFree24Claim,
+        lastFreeClaim: state.lastFreeClaim
+      }));
+    }
+
+    function loadLocal() {
+      try {
+        const raw = localStorage.getItem(`epic_gift_state_${state.userId}`);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        state.tonBalance = Number(parsed.tonBalance || 0);
+        state.gramBalance = Number(parsed.gramBalance || 0);
+        state.referralsCount = Number(parsed.referralsCount || 0);
+        state.inventory = Array.isArray(parsed.inventory) ? parsed.inventory : [];
+        state.history = Array.isArray(parsed.history) ? parsed.history : [];
+        state.liveFeed = Array.isArray(parsed.liveFeed) ? parsed.liveFeed : [];
+        state.lastFree24Claim = Number(parsed.lastFree24Claim || 0);
+        state.lastFreeClaim = Number(parsed.lastFreeClaim || 0);
+      } catch {}
+    }
+
+    function apiHeaders() {
+      const h = { 'Content-Type': 'application/json', 'x-user-id': state.userId };
+      if (initDataRaw) h['x-telegram-init-data'] = initDataRaw;
+      return h;
+    }
+
+    async function syncSessionWithServer() {
+      try {
+        const res = await fetch(`/api/session?userId=${encodeURIComponent(state.userId)}`, {
+          headers: apiHeaders()
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.ok && data.user) {
+          const dbEl = document.getElementById('dbBadge');
+          if (dbEl) dbEl.textContent = data.dbEngine === 'postgresql' ? 'PG DB' : 'JSON DB';
+          state.tonBalance = Number(data.user.tonBalance || 0);
+          state.gramBalance = Number(data.user.gramBalance || 0);
+          state.referralsCount = Number(data.user.referralsCount || 0);
+          state.inventory = Array.isArray(data.user.inventory) ? data.user.inventory : [];
+          state.history = Array.isArray(data.user.history) ? data.user.history : [];
+          state.lastFree24Claim = Number(data.user.lastFree24Claim || 0);
+          state.lastFreeClaim = Number(data.user.lastFreeClaim || 0);
+          if (Array.isArray(data.recentFeed) && data.recentFeed.length) {
+            state.liveFeed = data.recentFeed;
+          }
+          if (Array.isArray(data.leaderboard)) {
+            state.leaderboard = data.leaderboard;
+          }
+          persistLocal();
+          renderAll();
+        }
+      } catch {}
+    }
+
+    async function applyLedger({ action, deltaTon = 0, deltaGram = 0, title = 'Action', meta = {} }) {
+      const nextTon = Number((state.tonBalance + Number(deltaTon || 0)).toFixed(4));
+      const nextGram = Math.round(state.gramBalance + Number(deltaGram || 0));
+      if (nextTon < 0 || nextGram < 0) {
+        showToast('Insufficient balance');
+        return false;
+      }
+
+      state.tonBalance = nextTon;
+      state.gramBalance = nextGram;
+      if (meta.inventoryItem) state.inventory.unshift(meta.inventoryItem);
+
+      const entry = {
+        id: `tx_${Date.now()}`,
+        userId: state.userId,
+        action,
+        title,
+        deltaTon: Number(deltaTon || 0),
+        deltaGram: Number(deltaGram || 0),
+        createdAt: new Date().toISOString()
+      };
+      state.history.unshift(entry);
+      state.liveFeed.unshift(entry);
+      persistLocal();
+      renderAll();
+
+      try {
+        const res = await fetch('/api/ledger', {
+          method: 'POST',
+          headers: apiHeaders(),
+          body: JSON.stringify({
+            userId: state.userId,
+            username: state.username,
+            initData: initDataRaw,
+            action,
+            deltaTon,
+            deltaGram,
+            title,
+            meta
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.ok && data.user) {
+          const dbEl = document.getElementById('dbBadge');
+          if (dbEl) dbEl.textContent = data.dbEngine === 'postgresql' ? 'PG DB' : 'JSON DB';
+            state.tonBalance = Number(data.user.tonBalance);
+            state.gramBalance = Number(data.user.gramBalance);
+            state.inventory = data.user.inventory || state.inventory;
+            state.history = data.user.history || state.history;
+            persistLocal();
+            renderAll();
+          }
+        }
+      } catch {}
+
+      return true;
+    }
+
+    // TON Connect UI
+    let tonConnectUI = null;
+    try {
+      tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+        manifestUrl: `${window.location.origin}/tonconnect-manifest.json`,
+        buttonRootId: null
+      });
+      tonConnectUI.onStatusChange((wallet) => {
+        const btn = document.getElementById('walletBtn');
+        if (wallet?.account?.address) {
+          const shortAddr = `${wallet.account.address.slice(0, 4)}...${wallet.account.address.slice(-4)}`;
+          btn.textContent = `✅ ${shortAddr}`;
+          btn.classList.add('connected');
+        } else {
+          btn.textContent = '🔗 Wallet';
+          btn.classList.remove('connected');
+        }
+      });
+    } catch {}
+
+    async function handleWalletAction() {
+      if (!tonConnectUI) {
+        showToast('TON Connect ready');
+        return;
+      }
+      if (tonConnectUI.wallet) {
+        await tonConnectUI.disconnect();
+        showToast('Wallet disconnected');
+      } else {
+        await tonConnectUI.openModal();
+      }
+    }
+
+    async function submitDeposit() {
+      const amt = parseFloat(document.getElementById('depositAmount').value);
+      if (!amt || amt <= 0) return showToast('Enter valid TON amount');
+      const ok = await applyLedger({
+        action: 'deposit',
+        deltaTon: amt,
+        title: `Deposit +${amt.toFixed(2)} TON`
+      });
+      if (ok) {
+        closeModal('depositModal');
+        document.getElementById('depositAmount').value = '';
+        showToast(`Deposited ${amt.toFixed(2)} TON`);
+      }
+    }
+
+    async function submitWithdraw() {
+      const amt = parseFloat(document.getElementById('withdrawAmount').value);
+      if (!amt || amt <= 0) return showToast('Enter valid TON amount');
+      const ok = await applyLedger({
+        action: 'withdraw',
+        deltaTon: -amt,
+        title: `Withdraw -${amt.toFixed(2)} TON`
+      });
+      if (ok) {
+        closeModal('withdrawModal');
+        document.getElementById('withdrawAmount').value = '';
+        showToast(`Withdrew ${amt.toFixed(2)} TON`);
+      }
+    }
+
+    async function claimPromo(kind) {
+      const now = Date.now();
+      if (kind === 'free24') {
+        const cd = 24 * 60 * 60 * 1000;
+        if (now - state.lastFree24Claim < cd) {
+          return showToast('FREE24 is on 24h cooldown');
+        }
+        state.lastFree24Claim = now;
+        await applyLedger({
+          action: 'claim_free24',
+          deltaTon: 0.05,
+          title: 'FREE24 +0.05 TON'
+        });
+        showToast('Claimed +0.05 TON from FREE24');
+      } else {
+        const cd = 6 * 60 * 60 * 1000;
+        if (now - state.lastFreeClaim < cd) {
+          return showToast('FREE gift cooldown active');
+        }
+        state.lastFreeClaim = now;
+        await applyLedger({
+          action: 'claim_free',
+          deltaGram: 25,
+          title: 'FREE Gift +25 GRAM',
+          meta: {
+            inventoryItem: {
+              id: `inv_${Date.now()}`,
+              title: '🎁 FREE Daily Gift Box',
+              createdAt: new Date().toISOString()
+            }
+          }
+        });
+        showToast('Claimed FREE Gift (+25 GRAM)');
+      }
+    }
+
+    // Rocket Game
+    async function launchRocket() {
+      if (state.rocketActive) return showToast('Rocket already flying');
+      const bet = parseFloat(document.getElementById('rocketBet').value);
+      if (!bet || bet <= 0) return showToast('Enter bet amount');
+      const ok = await applyLedger({
+        action: 'rocket_bet',
+        deltaTon: -bet,
+        title: `Rocket Bet -${bet.toFixed(2)} TON`
+      });
+      if (!ok) return;
+
+      const autoCash = parseFloat(document.getElementById('rocketAuto').value) || 0;
+      state.rocketActive = true;
+      state.rocketBetAmount = bet;
+      state.rocketCurrentMult = 1.0;
+      state.rocketCrashAt = Number((1.15 + Math.random() * 2.4).toFixed(2));
+
+      document.getElementById('rocketLaunchBtn').disabled = true;
+      document.getElementById('rocketCashBtn').disabled = false;
+      document.getElementById('rocketEmoji').classList.add('flying');
+      document.getElementById('rocketStatus').textContent = 'Flying...';
+
+      state.rocketTimer = setInterval(async () => {
+        state.rocketCurrentMult = Number((state.rocketCurrentMult + 0.05).toFixed(2));
+        document.getElementById('rocketMult').textContent = `${state.rocketCurrentMult.toFixed(2)}x`;
+
+        if (autoCash >= 1.1 && state.rocketCurrentMult >= autoCash) {
+          await cashoutRocket();
+          return;
+        }
+
+        if (state.rocketCurrentMult >= state.rocketCrashAt) {
+          clearInterval(state.rocketTimer);
+          state.rocketActive = false;
+          document.getElementById('rocketLaunchBtn').disabled = false;
+          document.getElementById('rocketCashBtn').disabled = true;
+          document.getElementById('rocketEmoji').classList.remove('flying');
+          document.getElementById('rocketStatus').textContent = `Crashed @ ${state.rocketCrashAt.toFixed(2)}x`;
+          showToast(`Rocket crashed at ${state.rocketCrashAt.toFixed(2)}x`);
+        }
+      }, 140);
+    }
+
+    async function cashoutRocket() {
+      if (!state.rocketActive) return;
+      clearInterval(state.rocketTimer);
+      const payout = Number((state.rocketBetAmount * state.rocketCurrentMult).toFixed(4));
+      state.rocketActive = false;
+      document.getElementById('rocketLaunchBtn').disabled = false;
+      document.getElementById('rocketCashBtn').disabled = true;
+      document.getElementById('rocketEmoji').classList.remove('flying');
+      document.getElementById('rocketStatus').textContent = `Cashed @ ${state.rocketCurrentMult.toFixed(2)}x`;
+
+      await applyLedger({
+        action: 'rocket_win',
+        deltaTon: payout,
+        title: `Rocket Cashout +${payout.toFixed(4)} TON (${state.rocketCurrentMult.toFixed(2)}x)`
+      });
+      showToast(`Cashed out +${payout.toFixed(4)} TON`);
+    }
+
+    // PVP Hub
+    function setPvpMode(mode) {
+      state.pvpMode = mode;
+      document.getElementById('pvpSoloTab').classList.toggle('active', mode === 'SOLO');
+      document.getElementById('pvpTeamTab').classList.toggle('active', mode === 'TEAM');
+    }
+
+    async function playPvpMatch() {
+      const stake = parseFloat(document.getElementById('pvpStake').value);
+      if (!stake || stake <= 0) return showToast('Enter PVP stake');
+      const ok = await applyLedger({
+        action: 'pvp_stake',
+        deltaTon: -stake,
+        title: `PVP (${state.pvpMode}) Stake -${stake.toFixed(2)} TON`
+      });
+      if (!ok) return;
+
+      const won = Math.random() >= 0.45;
+      if (won) {
+        const prize = Number((stake * 1.85).toFixed(4));
+        await applyLedger({
+          action: 'pvp_win',
+          deltaTon: prize,
+          title: `PVP (${state.pvpMode}) Win +${prize.toFixed(4)} TON`
+        });
+        showToast(`PVP Victory! +${prize.toFixed(4)} TON`);
+      } else {
+        showToast('PVP round lost');
+      }
+    }
+
+    // Play Hub
+    function switchPlayGame(name) {
+      ['upgrade', 'plinko', 'mines'].forEach((g) => {
+        document.getElementById(`game-${g}`).classList.toggle('hidden', g !== name);
+      });
+      document.getElementById('subUpgrade').classList.toggle('active', name === 'upgrade');
+      document.getElementById('subPlinko').classList.toggle('active', name === 'plinko');
+      document.getElementById('subMines').classList.toggle('active', name === 'mines');
+      if (name === 'mines') renderMinesGrid();
+    }
+
+    async function runUpgrade() {
+      const amt = parseFloat(document.getElementById('upgradeBet').value);
+      if (!amt || amt <= 0) return showToast('Enter upgrade amount');
+      const ok = await applyLedger({
+        action: 'upgrade_bet',
+        deltaTon: -amt,
+        title: `Upgrade Stake -${amt.toFixed(2)} TON`
+      });
+      if (!ok) return;
+      if (Math.random() < 0.6) {
+        const winAmt = Number((amt * 1.65).toFixed(4));
+        await applyLedger({
+          action: 'upgrade_win',
+          deltaTon: winAmt,
+          title: `Upgrade Success +${winAmt.toFixed(4)} TON`
+        });
+        showToast(`Upgrade won +${winAmt.toFixed(4)} TON`);
+      } else {
+        showToast('Upgrade failed');
+      }
+    }
+
+    async function runPlinko() {
+      const amt = parseFloat(document.getElementById('plinkoBet').value);
+      if (!amt || amt <= 0) return showToast('Enter Plinko amount');
+      const ok = await applyLedger({
+        action: 'plinko_bet',
+        deltaTon: -amt,
+        title: `Plinko Bet -${amt.toFixed(2)} TON`
+      });
+      if (!ok) return;
+      const mults = [0.5, 0.8, 1.2, 1.6, 2.5];
+      const chosen = mults[Math.floor(Math.random() * mults.length)];
+      const payout = Number((amt * chosen).toFixed(4));
+      await applyLedger({
+        action: 'plinko_payout',
+        deltaTon: payout,
+        title: `Plinko ${chosen}x (+${payout.toFixed(4)} TON)`
+      });
+      showToast(`Plinko landed ${chosen}x (+${payout.toFixed(4)} TON)`);
+    }
+
+    function renderMinesGrid() {
+      const grid = document.getElementById('minesGrid');
+      grid.innerHTML = '';
+      for (let i = 0; i < 25; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'mine-cell';
+        if (state.minesOpened.has(i)) {
+          btn.classList.add('safe');
+          btn.textContent = '💎';
+        } else if (!state.minesActive && state.minesBombs.has(i) && state.minesOpened.size > 0) {
+          btn.classList.add('boom');
+          btn.textContent = '💣';
+        } else {
+          btn.textContent = '?';
+        }
+        btn.onclick = () => clickMineCell(i);
+        grid.appendChild(btn);
+      }
+    }
+
+    async function startMinesRound() {
+      const bet = parseFloat(document.getElementById('minesBet').value);
+      if (!bet || bet <= 0) return showToast('Enter Mines bet');
+      const ok = await applyLedger({
+        action: 'mines_bet',
+        deltaTon: -bet,
+        title: `Mines Bet -${bet.toFixed(2)} TON`
+      });
+      if (!ok) return;
+
+      state.minesActive = true;
+      state.minesBetAmount = bet;
+      state.minesBombs = new Set();
+      state.minesOpened = new Set();
+      while (state.minesBombs.size < 4) {
+        state.minesBombs.add(Math.floor(Math.random() * 25));
+      }
+      renderMinesGrid();
+      showToast('Mines started! Pick safe tiles');
+    }
+
+    async function clickMineCell(idx) {
+      if (!state.minesActive || state.minesOpened.has(idx)) return;
+      if (state.minesBombs.has(idx)) {
+        state.minesActive = false;
+        state.minesOpened.add(idx);
+        renderMinesGrid();
+        showToast('Boom! Hit a mine');
+        return;
+      }
+      state.minesOpened.add(idx);
+      renderMinesGrid();
+    }
+
+    async function collectMinesRound() {
+      if (!state.minesActive || state.minesOpened.size === 0) {
+        return showToast('Open at least one safe tile');
+      }
+      const mult = 1 + state.minesOpened.size * 0.25;
+      const payout = Number((state.minesBetAmount * mult).toFixed(4));
+      state.minesActive = false;
+      renderMinesGrid();
+      await applyLedger({
+        action: 'mines_collect',
+        deltaTon: payout,
+        title: `Mines Collect +${payout.toFixed(4)} TON (${mult.toFixed(2)}x)`
+      });
+      showToast(`Collected +${payout.toFixed(4)} TON`);
+    }
+
+    // Referral System (+0.30 TON)
+    function updateReferralUI() {
+      const baseUrl = `${window.location.origin}${window.location.pathname}`;
+      const refLink = `${baseUrl}?startapp=ref_${state.userId}`;
+      const input = document.getElementById('myRefLink');
+      if (input) input.value = refLink;
+      document.getElementById('refCountBadge').textContent = `${state.referralsCount} Refs`;
+    }
+
+    function copyRefLink() {
+      const el = document.getElementById('myRefLink');
+      navigator.clipboard?.writeText(el.value).catch(() => {});
+      showToast('Referral link copied (+0.30 TON per referral)');
+    }
+
+    function shareRefLink() {
+      const link = document.getElementById('myRefLink').value;
+      const text = `Join Epic Gift and earn rewards: ${link}`;
+      if (tg?.openTelegramLink) {
+        tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`);
+      } else {
+        copyRefLink();
+      }
+    }
+
+    async function claimReferralReward() {
+      const raw = document.getElementById('claimRefInput').value.replace(/^ref_/i, '').trim();
+      if (!raw) return showToast('Enter inviter ID or ref code');
+      if (raw === state.userId) return showToast('Cannot refer yourself');
+
+      try {
+        const res = await fetch('/api/claim-referral', {
+          method: 'POST',
+          headers: apiHeaders(),
+          body: JSON.stringify({
+            referrerId: raw,
+            referredUserId: state.userId,
+            initData: initDataRaw
+          })
+        });
+        const data = await res.json();
+        if (res.ok && data.ok) {
+          document.getElementById('claimRefInput').value = '';
+          showToast(`Referral claimed! +${APP_CONFIG.REFERRAL_REWARD_TON.toFixed(2)} TON`);
+          await syncSessionWithServer();
+          return;
+        }
+        showToast(data.error || 'Could not claim referral');
+      } catch {
+        // Fallback local deduplication if offline
+        const usedKey = `epic_ref_used_${raw}_${state.userId}`;
+        if (localStorage.getItem(usedKey)) {
+          return showToast('Referral already claimed');
+        }
+        localStorage.setItem(usedKey, '1');
+        state.referralsCount += 1;
+        await applyLedger({
+          action: 'referral_reward',
+          deltaTon: APP_CONFIG.REFERRAL_REWARD_TON,
+          title: `Referral +${APP_CONFIG.REFERRAL_REWARD_TON.toFixed(2)} TON`
+        });
+        document.getElementById('claimRefInput').value = '';
+        showToast(`Added +${APP_CONFIG.REFERRAL_REWARD_TON.toFixed(2)} TON`);
+      }
+    }
+
+    // Telegram Stars & Gifts Store
+    async function openGiftsStore() {
+      openModal('giftsStoreModal');
+      const banner = document.getElementById('storeDiscountBanner');
+      if (isAdmin()) {
+        banner.innerHTML = '🛡️ <b>Admin Mode (ID 5220076610):</b> 95% discount active (pay 5% of official Stars).';
+      } else {
+        banner.textContent = 'Official Telegram Stars gift prices.';
+      }
+
+      const listEl = document.getElementById('giftsCatalogList');
+      listEl.innerHTML = '<div style="grid-column:1/-1;font-size:12px;color:var(--text-secondary);">Loading gifts...</div>';
+
+      try {
+        const res = await fetch(`/api/telegram-gifts?userId=${encodeURIComponent(state.userId)}`, {
+          headers: apiHeaders()
+        });
+        const data = await res.json();
+        const gifts = Array.isArray(data.gifts) ? data.gifts : [];
+        renderGiftsCatalog(gifts);
+      } catch {
+        renderGiftsCatalog([]);
+      }
+    }
+
+    function renderGiftsCatalog(gifts) {
+      const listEl = document.getElementById('giftsCatalogList');
+      if (!gifts.length) {
+        listEl.innerHTML = '<div style="grid-column:1/-1;font-size:12px;color:var(--text-secondary);">No gifts available right now.</div>';
+        return;
+      }
+
+      listEl.innerHTML = '';
+      gifts.forEach((g) => {
+        const official = Number(g.star_count || 0);
+        const effective = isAdmin()
+          ? Math.max(1, Math.round(official * ((100 - APP_CONFIG.ADMIN_DISCOUNT_PERCENT) / 100)))
+          : official;
+
+        const card = document.createElement('div');
+        card.className = 'gift-item';
+        card.innerHTML = `
+          <div>
+            <div style="font-size:13px;font-weight:700;">${g.title || `Gift #${g.id}`}</div>
+            <div style="margin-top:4px;">
+              ${isAdmin() ? `<span class="price-strike">${official} ⭐</span>` : ''}
+              <span class="price-final">${effective} ⭐</span>
+            </div>
+          </div>
+          <button class="btn-primary" style="width:100%;padding:7px;">Buy Gift</button>
+        `;
+        card.querySelector('button').onclick = () => buyStarGift(g, effective);
+        listEl.appendChild(card);
+      });
+    }
+
+    async function buyStarGift(gift, finalStars) {
+      const targetInput = document.getElementById('giftRecipientInput').value.trim();
+      const targetUserId = targetInput || state.userId;
+
+      try {
+        const invRes = await fetch('/api/stars-invoice', {
+          method: 'POST',
+          headers: apiHeaders(),
+          body: JSON.stringify({
+            giftId: gift.id,
+            title: gift.title,
+            starCount: gift.star_count,
+            targetUserId,
+            initData: initDataRaw
+          })
+        });
+        const invData = await invRes.json();
+
+        if (invRes.ok && invData.ok && invData.invoiceLink && tg?.openInvoice) {
+          tg.openInvoice(invData.invoiceLink, async (status) => {
+            if (status === 'paid') {
+              await finalizeGiftOrder(gift, finalStars, targetUserId);
+            } else {
+              showToast(`Invoice status: ${status}`);
+            }
+          });
+          return;
+        }
+      } catch {}
+
+      await finalizeGiftOrder(gift, finalStars, targetUserId);
+    }
+
+    async function finalizeGiftOrder(gift, finalStars, targetUserId) {
+      try {
+        await fetch('/api/send-star-gift', {
+          method: 'POST',
+          headers: apiHeaders(),
+          body: JSON.stringify({
+            giftId: gift.id,
+            title: gift.title,
+            starCount: gift.star_count,
+            targetUserId,
+            initData: initDataRaw
+          })
+        });
+      } catch {}
+
+      await applyLedger({
+        action: 'star_gift',
+        title: `${gift.title} (${finalStars} ⭐)`,
+        meta: {
+          inventoryItem: {
+            id: `gift_${Date.now()}`,
+            title: `${gift.title} (${finalStars} ⭐ -> ${targetUserId})`,
+            createdAt: new Date().toISOString()
+          }
+        }
+      });
+      showToast(`Gift processed: ${gift.title} (${finalStars} ⭐)`);
+    }
+
+    async function adminAdjustBalance() {
+      if (!isAdmin()) return showToast('Admin only');
+      const targetId = document.getElementById('adminTargetId').value.trim() || state.userId;
+      const deltaTon = parseFloat(document.getElementById('adminAddTon').value);
+      if (Number.isNaN(deltaTon)) return showToast('Enter TON delta');
+
+      try {
+        await fetch('/api/ledger', {
+          method: 'POST',
+          headers: apiHeaders(),
+          body: JSON.stringify({
+            userId: state.userId,
+            initData: initDataRaw,
+            action: 'admin_adjust',
+            targetUserId: targetId,
+            deltaTon,
+            title: `Admin Adjust (${deltaTon >= 0 ? '+' : ''}${deltaTon} TON)`
+          })
+        });
+      } catch {}
+
+      if (targetId === state.userId) {
+        await applyLedger({
+          action: 'admin_adjust',
+          deltaTon,
+          title: `Admin Adjust (${deltaTon >= 0 ? '+' : ''}${deltaTon} TON)`
+        });
+      }
+      showToast('Admin balance updated');
+    }
+
+    function switchMainTab(tabName, btnEl) {
+      ['home', 'backpack', 'invite', 'leaderboard', 'earn'].forEach((t) => {
+        document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tabName);
+      });
+      document.querySelectorAll('.nav-item').forEach((n) => n.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+    }
+
+    function renderAll() {
+      document.getElementById('tonDisplay').textContent = `${state.tonBalance.toFixed(3)} TON`;
+      document.getElementById('gramDisplay').innerHTML = `${state.gramBalance} GRAM • User #<span id="userIdLabel">${state.userId}</span>`;
+      document.getElementById('adminBadge').classList.toggle('hidden', !isAdmin());
+      document.getElementById('adminPanelCard').classList.toggle('hidden', !isAdmin());
+
+      // Live strip
+      const strip = document.getElementById('liveStrip');
+      strip.innerHTML = '<span class="live-badge">LIVE</span>';
+      if (!state.liveFeed.length) {
+        const span = document.createElement('span');
+        span.className = 'live-empty';
+        span.textContent = 'No live events yet. Play, refer (+0.30 TON), or buy a gift.';
+        strip.appendChild(span);
+      } else {
+        state.liveFeed.slice(0, 12).forEach((item) => {
+          const chip = document.createElement('span');
+          chip.className = 'live-chip';
+          chip.textContent = `#${item.userId || state.userId}: ${item.title}`;
+          strip.appendChild(chip);
+        });
+      }
+
+      // Backpack
+      const bp = document.getElementById('backpackList');
+      if (!state.inventory.length) {
+        bp.innerHTML = '<div style="font-size:12px;color:var(--text-secondary);">Your backpack is empty.</div>';
+      } else {
+        bp.innerHTML = state.inventory.map((it) => `
+          <div class="history-item">
+            <span>${it.title}</span>
+            <span style="color:var(--text-secondary);font-size:11px;">${new Date(it.createdAt || Date.now()).toLocaleTimeString()}</span>
+          </div>
+        `).join('');
+      }
+
+      // Leaderboard (strictly real users)
+      const lb = document.getElementById('leaderboardList');
+      const rows = state.leaderboard.length ? state.leaderboard : [{
+        id: state.userId,
+        username: state.username || `User #${state.userId}`,
+        tonBalance: state.tonBalance,
+        gramBalance: state.gramBalance,
+        referralsCount: state.referralsCount
+      }];
+      lb.innerHTML = rows.map((r, idx) => `
+        <div class="history-item">
+          <span><b>#${idx + 1}</b> ${r.username || `User #${r.id}`}</span>
+          <span style="color:var(--accent-gold);font-weight:700;">${Number(r.tonBalance || 0).toFixed(3)} TON • ${r.referralsCount || 0} refs</span>
+        </div>
+      `).join('');
+
+      // History
+      const hist = document.getElementById('historyList');
+      if (!state.history.length) {
+        hist.innerHTML = '<div style="font-size:12px;color:var(--text-secondary);">No transactions yet.</div>';
+      } else {
+        hist.innerHTML = state.history.slice(0, 30).map((h) => `
+          <div class="history-item">
+            <span>${h.title}</span>
+            <span style="color:var(--text-secondary);font-size:11px;">${new Date(h.createdAt || Date.now()).toLocaleTimeString()}</span>
+          </div>
+        `).join('');
+      }
+
+      updateReferralUI();
+    }
+
+    // Check URL referral parameter automatically
+    async function checkUrlReferral() {
+      const params = new URLSearchParams(window.location.search);
+      const startParam = params.get('startapp') || params.get('ref') || tg?.initDataUnsafe?.start_param || '';
+      const cleanRef = String(startParam).replace(/^ref_/i, '').trim();
+      if (cleanRef && cleanRef !== state.userId) {
+        document.getElementById('claimRefInput').value = cleanRef;
+        await claimReferralReward();
+      }
+    }
+
+    loadLocal();
+    renderAll();
+    syncSessionWithServer().then(() => checkUrlReferral());
+  </script>
+</body>
+</html>
